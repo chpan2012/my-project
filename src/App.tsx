@@ -13,8 +13,9 @@ import {
   Line,
   ReferenceArea,
   ReferenceLine,
-  Cell,
+  Cell, // [Clio Restoration] Added Cell back for IRFDoubleChart
 } from 'recharts';
+import type { AxisDomain } from 'recharts/types/util/types'; // [Clio Fix] Import AxisDomain type
 
 // ===================== 小元件：Accordion ===================== //
 const Accordion: React.FC<{ title: string; defaultOpen?: boolean; children: ReactNode }> = ({ title, defaultOpen = false, children }) => (
@@ -24,156 +25,75 @@ const Accordion: React.FC<{ title: string; defaultOpen?: boolean; children: Reac
   </details>
 );
 
-// ===================== 研究架構示意圖（鑽石型） ===================== //
-const ResearchFramework: React.FC = () => (
-  <div style={{ background: '#0b1220', padding: 24, border: '1px solid #334155', borderRadius: 12, textAlign: 'center', color: '#d1d5db' }}>
-    <h3 style={{ color: 'white', marginBottom: 16 }}>研究架構示意圖（鑽石型）</h3>
-    <svg viewBox="0 0 600 520" width="100%" height="auto">
-      <defs>
-        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
-          <path d="M0,0 L0,6 L9,3 z" fill="#60a5fa" />
-        </marker>
-        <marker id="dashedArrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
-          <path d="M0,0 L0,6 L9,3 z" fill="#9ca3af" />
-        </marker>
-      </defs>
+// --- [Clio 整合]：根據 image_173c20.jpg 繪製的 SVG 概念框架圖 ---
+const ConceptualFrameworkDiagram = () => (
+    <svg viewBox="0 0 600 400" className="w-full h-auto" aria-labelledby="svg-title-conceptual" style={{ background: '#0b1220', borderRadius: 8 }}>
+        <title id="svg-title-conceptual">研究概念框架圖</title>
+        <defs>
+            <marker id="arrowhead-conceptual" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af" />
+            </marker>
+        </defs>
 
-      {/* 節點：FDT 在上、RC 在右、DAP 在下、SP 在左（菱形） */}
-      <circle cx="300" cy="100" r="40" fill="#EF4444" />
-      <text x="300" y="105" textAnchor="middle" fill="white" fontSize="14">FDT</text>
-      <text x="300" y="150" textAnchor="middle" fill="#9ca3af" fontSize="13">假訊息威脅</text>
+        {/* 節點 (Boxes) */}
+        <g id="node-fdt" transform="translate(150, 80)">
+            <rect x="-100" y="-30" width="200" height="60" rx="5" fill="#1f2937" stroke="#93c5fd" strokeWidth="2" />
+            <text x="0" y="-5" fontFamily="Noto Sans TC, sans-serif" fontSize="14" fill="white" textAnchor="middle" fontWeight="bold">數位威權脅迫</text>
+            <text x="0" y="20" fontFamily="Noto Sans TC, sans-serif" fontSize="12" fill="#9ca3af" textAnchor="middle">(國外假訊息威脅 FDT)</text>
+        </g>
+        <g id="node-rc" transform="translate(450, 80)">
+            <rect x="-100" y="-30" width="200" height="60" rx="5" fill="#1f2937" stroke="#93c5fd" strokeWidth="2" />
+            <text x="0" y="5" fontFamily="Noto Sans TC, sans-serif" fontSize="14" fill="white" textAnchor="middle" fontWeight="bold">國家管制能力 (RC)</text>
+        </g>
+        <g id="node-dap" transform="translate(450, 320)">
+            <rect x="-100" y="-30" width="200" height="60" rx="5" fill="#1f2937" stroke="#93c5fd" strokeWidth="2" />
+            <text x="0" y="5" fontFamily="Noto Sans TC, sans-serif" fontSize="14" fill="white" textAnchor="middle" fontWeight="bold">防衛濫權 (DAP)</text>
+        </g>
+        <g id="node-sp" transform="translate(150, 320)">
+            <rect x="-100" y="-30" width="200" height="60" rx="5" fill="#1f2937" stroke="#93c5fd" strokeWidth="2" />
+            <text x="0" y="5" fontFamily="Noto Sans TC, sans-serif" fontSize="14" fill="white" textAnchor="middle" fontWeight="bold">社會兩極化 (SP)</text>
+        </g>
 
-      <circle cx="500" cy="250" r="40" fill="#3B82F6" />
-      <text x="500" y="255" textAnchor="middle" fill="white" fontSize="14">RC</text>
-      <text x="500" y="295" textAnchor="middle" fill="#9ca3af" fontSize="13">管制能力</text>
+        {/* 實線箭頭 (Hypotheses) */}
+        <path id="path-h1" d="M 250,80 H 350" stroke="#9ca3af" strokeWidth="2" fill="none" markerEnd="url(#arrowhead-conceptual)"/>
+        <text x="300" y="70" fontSize="12" fill="#d1d5db" textAnchor="middle">H1 (+)</text>
 
-      <circle cx="300" cy="400" r="40" fill="#8B5CF6" />
-      <text x="300" y="405" textAnchor="middle" fill="white" fontSize="14">DAP</text>
-      <text x="300" y="445" textAnchor="middle" fill="#9ca3af" fontSize="13">防衛濫權</text>
+        <path id="path-h2" d="M 450,140 V 260" stroke="#9ca3af" strokeWidth="2" fill="none" markerEnd="url(#arrowhead-conceptual)"/>
+        <text x="465" y="200" fontSize="12" fill="#d1d5db" textAnchor="middle">H2 (+)</text>
 
-      <circle cx="100" cy="250" r="40" fill="#F97316" />
-      <text x="100" y="255" textAnchor="middle" fill="white" fontSize="14">SP</text>
-      <text x="100" y="295" textAnchor="middle" fill="#9ca3af" fontSize="13">社會兩極化</text>
+        <path id="path-h3" d="M 350,320 H 250" stroke="#9ca3af" strokeWidth="2" fill="none" markerEnd="url(#arrowhead-conceptual)"/>
+        <text x="300" y="310" fontSize="12" fill="#d1d5db" textAnchor="middle">H3 (+)</text>
 
-      {/* 實線箭頭（主要假設關係） */}
-      <line x1="300" y1="140" x2="470" y2="230" stroke="#60a5fa" strokeWidth="2.5" markerEnd="url(#arrow)" />
-      <line x1="470" y1="270" x2="330" y2="370" stroke="#60a5fa" strokeWidth="2.5" markerEnd="url(#arrow)" />
-      <line x1="270" y1="370" x2="130" y2="270" stroke="#60a5fa" strokeWidth="2.5" markerEnd="url(#arrow)" />
+        {/* 虛線箭頭 (Feedback) */}
+        <path id="path-sp-fdt" d="M 150,260 V 140" stroke="#fb923c" strokeWidth="2" fill="none" strokeDasharray="5 5" markerEnd="url(#arrowhead-conceptual)"/>
+        <text x="135" y="200" fontSize="12" fill="#fb923c" textAnchor="middle">內生脆弱性</text>
 
-      {/* 虛線箭頭（延伸關係） */}
-      <line x1="470" y1="260" x2="130" y2="260" stroke="#9ca3af" strokeWidth="2" strokeDasharray="6 4" markerEnd="url(#dashedArrow)" />
-      <line x1="150" y1="250" x2="260" y2="130" stroke="#9ca3af" strokeWidth="2" strokeDasharray="6 4" markerEnd="url(#dashedArrow)" />
-
-      {/* 圖例 */}
-      <text x="300" y="490" textAnchor="middle" fill="#9ca3af" fontSize="13">實線：主要假設關係（FDT→RC→DAP→SP）</text>
-      <text x="300" y="510" textAnchor="middle" fill="#9ca3af" fontSize="13">虛線：延伸關係（RC→SP；SP→FDT）</text>
+        <path id="path-rc-sp" d="M 420,110 L 180,290" stroke="#fb923c" strokeWidth="2" fill="none" strokeDasharray="5 5" markerEnd="url(#arrowhead-conceptual)"/>
+        <text x="300" y="190" fontSize="12" fill="#fb923c" textAnchor="middle" transform="rotate(-35 300 190)">國家權力悖論</text>
     </svg>
-  </div>
 );
 
-// ===================== 公用函式 ===================== //
-const Dot = ({ color }: { color: string }) => (
-  <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 9999, background: color, marginRight: 6 }} />
-);
 
-const percent = (v?: number) => (typeof v === 'number' ? `${(v * 100).toFixed(1)}%` : '—');
-
-// ✅ 嚴格大於 5% 才顯示
-const labelFormatter = (v?: number) => (typeof v === 'number' && v > 0.05 ? percent(v) : '');
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload || !payload.length) return null;
-  return (
-    <div style={{ background: '#0b1220', border: '1px solid #334155', padding: 12, borderRadius: 8, color: '#e5e7eb', minWidth: 220 }}>
-      <div style={{ fontWeight: 'bold', marginBottom: 6 }}>期數：{label}</div>
-      {payload.map((entry: any, idx: number) => (
-        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, lineHeight: 1.6 }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Dot color={entry.color} />
-            <span>{entry.name}</span>
-          </div>
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{percent(entry.value)}</span>
-        </div>
-      ))}
-    </div>
-  );
+// ===================== FEVD 資料 (硬編碼) ===================== //
+const fevdData = {
+  fdt: [
+    { period: 1, '國外假訊息威脅': 1.0000, '社會兩極化': 0.0000, '管制能力': 0.0000, '防衛濫權': 0.0000 }, { period: 2, '國外假訊息威脅': 0.9208, '社會兩極化': 0.0474, '管制能力': 0.0190, '防衛濫權': 0.0128 }, { period: 3, '國外假訊息威脅': 0.7763, '社會兩極化': 0.1936, '管制能力': 0.0164, '防衛濫權': 0.0137 }, { period: 4, '國外假訊息威脅': 0.6292, '社會兩極化': 0.3475, '管制能力': 0.0125, '防衛濫權': 0.0108 }, { period: 5, '國外假訊息威脅': 0.5171, '社會兩極化': 0.4585, '管制能力': 0.0156, '防衛濫權': 0.0088 }, { period: 6, '國外假訊息威脅': 0.4132, '社會兩極化': 0.5576, '管制能力': 0.0213, '防衛濫權': 0.0079 }, { period: 7, '國外假訊息威脅': 0.3796, '社會兩極化': 0.3869, '管制能力': 0.1501, '防衛濫權': 0.0834 }, { period: 8, '國外假訊息威脅': 0.3859, '社會兩極化': 0.1985, '管制能力': 0.2681, '防衛濫權': 0.1476 }, { period: 9, '國外假訊息威脅': 0.4618, '社會兩極化': 0.0636, '管制能力': 0.2822, '防衛濫權': 0.1925 }, { period: 10, '國外假訊息威脅': 0.4796, '社會兩極化': 0.0227, '管制能力': 0.2965, '防衛濫權': 0.2013 }, { period: 11, '國外假訊息威脅': 0.4932, '社會兩極化': 0.0159, '管制能力': 0.2883, '防衛濫權': 0.2026 }, { period: 12, '國外假訊息威脅': 0.5051, '社會兩極化': 0.0093, '管制能力': 0.2790, '防衛濫權': 0.2066 }, { period: 13, '國外假訊息威脅': 0.4988, '社會兩極化': 0.0109, '管制能力': 0.2859, '防衛濫權': 0.2045 }, { period: 14, '國外假訊息威脅': 0.5080, '社會兩極化': 0.0095, '管制能力': 0.2750, '防衛濫權': 0.2075 }, { period: 15, '國外假訊息威脅': 0.4996, '社會兩極化': 0.0093, '管制能力': 0.2836, '防衛濫權': 0.2075 },
+  ],
+  sp: [
+    { period: 1, '國外假訊息威脅': 0.0004, '社會兩極化': 0.9996, '管制能力': 0.0000, '防衛濫權': 0.0000 }, { period: 2, '國外假訊息威脅': 0.3839, '社會兩極化': 0.3347, '管制能力': 0.1261, '防衛濫權': 0.1552 }, { period: 3, '國外假訊息威脅': 0.3902, '社會兩極化': 0.3903, '管制能力': 0.0785, '防衛濫權': 0.1411 }, { period: 4, '國外假訊息威脅': 0.3840, '社會兩極化': 0.2576, '管制能力': 0.2143, '防衛濫權': 0.1441 }, { period: 5, '國外假訊息威脅': 0.3701, '社會兩極化': 0.2889, '管制能力': 0.2088, '防衛濫權': 0.1323 }, { period: 6, '國外假訊息威脅': 0.4167, '社會兩極化': 0.2297, '管制能力': 0.1916, '防衛濫權': 0.1621 }, { period: 7, '國外假訊息威脅': 0.4304, '社會兩極化': 0.2215, '管制能力': 0.1706, '防衛濫權': 0.1776 }, { period: 8, '國外假訊息威脅': 0.3882, '社會兩極化': 0.2552, '管制能力': 0.1967, '防衛濫權': 0.1600 }, { period: 9, '國外假訊息威脅': 0.4959, '社會兩極化': 0.1786, '管制能力': 0.1455, '防衛濫權': 0.1799 }, { period: 10, '國外假訊息威脅': 0.4237, '社會兩極化': 0.1040, '管制能力': 0.2901, '防衛濫權': 0.1822 }, { period: 11, '國外假訊息威脅': 0.3430, '社會兩極化': 0.2756, '管制能力': 0.2285, '防衛濫權': 0.1530 }, { period: 12, '國外假訊息威脅': 0.4372, '社會兩極化': 0.2045, '管制能力': 0.1762, '防衛濫權': 0.1821 }, { period: 13, '國外假訊息威脅': 0.4349, '社會兩極化': 0.2380, '管制能力': 0.1518, '防衛濫權': 0.1753 }, { period: 14, '國外假訊息威脅': 0.3952, '社會兩極化': 0.2264, '管制能力': 0.2177, '防衛濫權': 0.1608 }, { period: 15, '國外假訊息威脅': 0.3064, '社會兩極化': 0.2642, '管制能力': 0.2827, '防衛濫權': 0.1467 },
+  ],
+  rc: [
+    { period: 1, '國外假訊息威脅': 0.0197, '社會兩極化': 0.1753, '管制能力': 0.8051, '防衛濫權': 0.0000 }, { period: 2, '國外假訊息威脅': 0.5385, '社會兩極化': 0.0093, '管制能力': 0.2562, '防衛濫權': 0.1960 }, { period: 3, '國外假訊息威脅': 0.4876, '社會兩極化': 0.0475, '管制能力': 0.2683, '防衛濫權': 0.1966 }, { period: 4, '國外假訊息威脅': 0.4938, '社會兩極化': 0.0351, '管制能力': 0.2801, '防衛濫權': 0.1909 }, { period: 5, '國外假訊息威脅': 0.5355, '社會兩極化': 0.0243, '管制能力': 0.2370, '防衛濫權': 0.2031 }, { period: 6, '國外假訊息威脅': 0.5134, '社會兩極化': 0.0172, '管制能力': 0.2710, '防衛濫權': 0.1984 }, { period: 7, '國外假訊息威脅': 0.5082, '社會兩極化': 0.0371, '管制能力': 0.2607, '防衛濫權': 0.1941 }, { period: 8, '國外假訊息威脅': 0.4716, '社會兩極化': 0.0903, '管制能力': 0.2495, '防衛濫權': 0.1886 }, { period: 9, '國外假訊息威脅': 0.4735, '社會兩極化': 0.1250, '管制能力': 0.2122, '防衛濫權': 0.1892 }, { period: 10, '國外假訊息威脅': 0.4383, '社會兩極化': 0.1617, '管制能力': 0.2249, '防衛濫權': 0.1751 }, { period: 11, '國外假訊息威脅': 0.5245, '社會兩極化': 0.1116, '管制能力': 0.1732, '防衛濫權': 0.1907 }, { period: 12, '國外假訊息威脅': 0.4353, '社會兩極化': 0.0972, '管制能力': 0.2869, '防衛濫權': 0.1807 }, { period: 13, '國外假訊息威脅': 0.3574, '社會兩極化': 0.2436, '管制能力': 0.2412, '防衛濫權': 0.1578 }, { period: 14, '國外假訊息威脅': 0.4034, '社會兩極化': 0.2442, '管制能力': 0.1800, '防衛濫權': 0.1724 }, { period: 15, '國外假訊息威脅': 0.4395, '社會兩極化': 0.2502, '管制能力': 0.1334, '防衛濫權': 0.1769 },
+  ],
+  dap: [
+    { period: 1, '國外假訊息威脅': 0.5135, '社會兩極化': 0.0594, '管制能力': 0.2245, '防衛濫權': 0.2026 }, { period: 2, '國外假訊息威脅': 0.5005, '社會兩極化': 0.0383, '管制能力': 0.2690, '防衛濫權': 0.1922 }, { period: 3, '國外假訊息威脅': 0.5507, '社會兩極化': 0.0229, '管制能力': 0.2257, '防衛濫權': 0.2007 }, { period: 4, '國外假訊息威脅': 0.5147, '社會兩極化': 0.0285, '管制能力': 0.2598, '防衛濫權': 0.1969 }, { period: 5, '國外假訊息威脅': 0.4608, '社會兩極化': 0.1090, '管制能力': 0.2464, '防衛濫權': 0.1838 }, { period: 6, '國外假訊息威脅': 0.4184, '社會兩極化': 0.1980, '管制能力': 0.2141, '防衛濫權': 0.1695 }, { period: 7, '國外假訊息威脅': 0.5150, '社會兩極化': 0.1202, '管制能力': 0.1698, '防衛濫權': 0.1951 }, { period: 8, '國外假訊息威脅': 0.4622, '社會兩極化': 0.0841, '管制能力': 0.2707, '防衛濫權': 0.1829 }, { period: 9, '國外假訊息威脅': 0.4082, '社會兩極化': 0.1731, '管制能力': 0.2577, '防衛濫權': 0.1610 }, { period: 10, '國外假訊息威脅': 0.4062, '社會兩極化': 0.1792, '管制能力': 0.2398, '防衛濫權': 0.1748 }, { period: 11, '國外假訊息威脅': 0.4007, '社會兩極化': 0.2485, '管制能力': 0.1805, '防衛濫權': 0.1703 }, { period: 12, '國外假訊息威脅': 0.4202, '社會兩極化': 0.2698, '管制能力': 0.1385, '防衛濫權': 0.1715 }, { period: 13, '國外假訊息威脅': 0.4360, '社會兩極化': 0.2491, '管制能力': 0.1471, '防衛濫權': 0.1677 }, { period: 14, '國外假訊息威脅': 0.3451, '社會兩極化': 0.2040, '管制能力': 0.2940, '防衛濫權': 0.1569 }, { period: 15, '國外假訊息威脅': 0.3246, '社會兩極化': 0.2906, '管制能力': 0.2324, '防衛濫權': 0.1525 },
+  ],
 };
+const dataKeys = ['國外假訊息威脅', '社會兩極化', '管制能力', '防衛濫權'];
+const colors = { '國外假訊息威脅': '#EF4444', '社會兩極化': '#F97316', '管制能力': '#3B82F6', '防衛濫權': '#8B5CF6' };
 
-// ===================== 原始資料（FEVD 圖表） ===================== //
-const fevdDataFDT = [
-  { period: 1, '國外假訊息威脅': 1.0, '社會兩極化': 0.0, '管制能力': 0.0, '防衛濫權': 0.0 },
-  { period: 2, '國外假訊息威脅': 0.9208, '社會兩極化': 0.0474, '管制能力': 0.019, '防衛濫權': 0.0128 },
-  { period: 3, '國外假訊息威脅': 0.7763, '社會兩極化': 0.1936, '管制能力': 0.0164, '防衛濫權': 0.0137 },
-  { period: 4, '國外假訊息威脅': 0.6292, '社會兩極化': 0.3475, '管制能力': 0.0125, '防衛濫權': 0.0108 },
-  { period: 5, '國外假訊息威脅': 0.5171, '社會兩極化': 0.4585, '管制能力': 0.0156, '防衛濫權': 0.0088 },
-  { period: 6, '國外假訊息威脅': 0.4132, '社會兩極化': 0.5576, '管制能力': 0.0213, '防衛濫權': 0.0079 },
-  { period: 7, '國外假訊息威脅': 0.3796, '社會兩極化': 0.3869, '管制能力': 0.1501, '防衛濫權': 0.0834 },
-  { period: 8, '國外假訊息威脅': 0.3859, '社會兩極化': 0.1985, '管制能力': 0.2681, '防衛濫權': 0.1476 },
-  { period: 9, '國外假訊息威脅': 0.4618, '社會兩極化': 0.0636, '管制能力': 0.2822, '防衛濫權': 0.1925 },
-  { period: 10, '國外假訊息威脅': 0.4796, '社會兩極化': 0.0227, '管制能力': 0.2965, '防衛濫權': 0.2013 },
-  { period: 11, '國外假訊息威脅': 0.4932, '社會兩極化': 0.0159, '管制能力': 0.2883, '防衛濫權': 0.2026 },
-  { period: 12, '國外假訊息威脅': 0.5051, '社會兩極化': 0.0093, '管制能力': 0.279, '防衛濫權': 0.2066 },
-  { period: 13, '國外假訊息威脅': 0.4988, '社會兩極化': 0.0109, '管制能力': 0.2859, '防衛濫權': 0.2045 },
-  { period: 14, '國外假訊息威脅': 0.508, '社會兩極化': 0.0095, '管制能力': 0.275, '防衛濫權': 0.2075 },
-  { period: 15, '國外假訊息威脅': 0.4996, '社會兩極化': 0.0093, '管制能力': 0.2836, '防衛濫權': 0.2075 },
-];
-
-const fevdDataSP = [
-  { period: 1, '國外假訊息威脅': 0.0004, '社會兩極化': 0.9996, '管制能力': 0.0, '防衛濫權': 0.0 },
-  { period: 2, '國外假訊息威脅': 0.3839, '社會兩極化': 0.3347, '管制能力': 0.1261, '防衛濫權': 0.1552 },
-  { period: 3, '國外假訊息威脅': 0.3902, '社會兩極化': 0.3903, '管制能力': 0.0785, '防衛濫權': 0.1411 },
-  { period: 4, '國外假訊息威脅': 0.384, '社會兩極化': 0.2576, '管制能力': 0.2143, '防衛濫權': 0.1441 },
-  { period: 5, '國外假訊息威脅': 0.3701, '社會兩極化': 0.2889, '管制能力': 0.2088, '防衛濫權': 0.1323 },
-  { period: 6, '國外假訊息威脅': 0.4167, '社會兩極化': 0.2297, '管制能力': 0.1916, '防衛濫權': 0.1621 },
-  { period: 7, '國外假訊息威脅': 0.4304, '社會兩極化': 0.2215, '管制能力': 0.1706, '防衛濫權': 0.1776 },
-  { period: 8, '國外假訊息威脅': 0.3882, '社會兩極化': 0.2552, '管制能力': 0.1967, '防衛濫權': 0.16 },
-  { period: 9, '國外假訊息威脅': 0.4959, '社會兩極化': 0.1786, '管制能力': 0.1455, '防衛濫權': 0.1799 },
-  { period: 10, '國外假訊息威脅': 0.4237, '社會兩極化': 0.104, '管制能力': 0.2901, '防衛濫權': 0.1822 },
-  { period: 11, '國外假訊息威脅': 0.343, '社會兩極化': 0.2756, '管制能力': 0.2285, '防衛濫權': 0.153 },
-  { period: 12, '國外假訊息威脅': 0.4372, '社會兩極化': 0.2045, '管制能力': 0.1762, '防衛濫權': 0.1821 },
-  { period: 13, '國外假訊息威脅': 0.4349, '社會兩極化': 0.238, '管制能力': 0.1518, '防衛濫權': 0.1753 },
-  { period: 14, '國外假訊息威脅': 0.3952, '社會兩極化': 0.2264, '管制能力': 0.2177, '防衛濫權': 0.1608 },
-  { period: 15, '國外假訊息威脅': 0.3064, '社會兩極化': 0.2642, '管制能力': 0.2827, '防衛濫權': 0.1467 },
-];
-
-// ===================== 其它資料：FEVD 表格 ===================== //
-const fevdRC = [
-  [0.01969217, 0.17529986, 0.8050080, 0.0000000],
-  [0.53853478, 0.00928679, 0.2561803, 0.1959981],
-  [0.48760081, 0.04749330, 0.2683242, 0.1965817],
-  [0.49380977, 0.03514216, 0.2801144, 0.1909337],
-  [0.53553416, 0.02432393, 0.2370140, 0.2031279],
-  [0.51341127, 0.01723455, 0.2709698, 0.1983843],
-  [0.50818038, 0.03705098, 0.2606835, 0.1940851],
-  [0.47158033, 0.09029295, 0.2494949, 0.1886318],
-  [0.47354519, 0.12504305, 0.2122164, 0.1891954],
-  [0.43829693, 0.16167855, 0.2249368, 0.1750877],
-  [0.52448250, 0.11161845, 0.1732356, 0.1906635],
-  [0.43531397, 0.09715476, 0.2868750, 0.1806563],
-  [0.35742966, 0.24355839, 0.2411720, 0.1578399],
-  [0.40343289, 0.24416302, 0.1800273, 0.1723768],
-  [0.43951924, 0.25016855, 0.1333780, 0.1769342],
-];
-
-const fevdDAP = [
-  [0.5135349, 0.05940237, 0.2244510, 0.2026118],
-  [0.5004798, 0.03831854, 0.2689877, 0.1922139],
-  [0.5506975, 0.02285111, 0.2257468, 0.2007046],
-  [0.5147459, 0.02849596, 0.2598274, 0.1969307],
-  [0.4607921, 0.10904073, 0.2463709, 0.1837963],
-  [0.4184042, 0.19797597, 0.2141259, 0.1694940],
-  [0.5149977, 0.12017589, 0.1697574, 0.1950690],
-  [0.4622266, 0.08410186, 0.2707454, 0.1829261],
-  [0.4081556, 0.17314083, 0.2576589, 0.1610447],
-  [0.4062434, 0.17921058, 0.2397794, 0.1747667],
-  [0.4007088, 0.24846464, 0.1805325, 0.1702940],
-  [0.4201773, 0.26979592, 0.1384806, 0.1715462],
-  [0.4360359, 0.24914434, 0.1470736, 0.1677462],
-  [0.3451436, 0.20395306, 0.2939841, 0.1569193],
-  [0.3245588, 0.29061450, 0.2323553, 0.1524715],
-];
-
-// ===== IRF 數據（五組）：irf / lower / upper =====
+// ===================== IRF 資料 (硬編碼) ===================== //
+// [Clio Restoration] Restored hardcoded IRF data arrays from App.txt
 const irf_prop1_irf = [0.0007039671,-0.0162145712,-0.0732614146,-0.0669113318,-0.1403808512,-0.1026611397,-0.0341524022,-0.1005110521,0.2487307356,0.0217119911,0.2909506380,0.4846125439,-0.4071855039,1.0627065173,-1.0623278146,0.0275445721];
 const irf_prop1_lo  = [-0.000857471,-0.030361948,-0.131984946,-0.13413398,-0.271344886,-0.239599806,-0.128241291,-0.29813237,-0.09067743,-0.255578628,-0.070603564,-0.263433599,-1.105637258,-0.618861464,-2.168478525,-0.822359837];
 const irf_prop1_hi  = [0.003922682,0.00495299,0.02677355,0.032902544,0.047857316,0.067193948,0.060955134,0.063883024,0.441592513,0.137710118,0.525676461,0.899683539,0.297939689,2.11062961,0.331797532,0.772758057];
@@ -194,58 +114,159 @@ const irf_par2_irf = [0,0.036793994,0.081693426,0.104837267,0.111211129,0.129850
 const irf_par2_lo  = [0,-0.011941673,0.004218836,0.009238447,-0.003681627,-0.018914249,-0.111556418,-0.171690204,-0.352919441,-0.559180888,-0.463748363,-0.814418796,-0.569057775,-0.52433944,-0.770736574,0.008212175];
 const irf_par2_hi  = [0,0.06277818,0.11311566,0.14247631,0.18898544,0.24331937,0.26581384,0.37784412,0.43887505,0.55779226,0.81501389,0.76378382,1.03462932,0.76014852,0.59984269,1.29729618];
 
-// 將 4 欄矩陣（FDT, SP, RC, DAP）轉為圖表資料物件陣列
-function transformFevdMatrix(mat: number[][]) {
-  const KEYS = ['國外假訊息威脅', '社會兩極化', '管制能力', '防衛濫權'];
-  return mat.map((row, i) => {
-    const obj: any = { period: i + 1 };
-    KEYS.forEach((k, idx) => (obj[k] = row[idx] ?? 0));
-    return obj;
-  });
-}
 
-const fevdRC_stacked = transformFevdMatrix(fevdRC);
-const fevdDAP_stacked = transformFevdMatrix(fevdDAP);
-
-const COLMAP: Record<string, string> = {
-  '國外假訊息威脅': '#EF4444',
-  '社會兩極化': '#F97316',
-  '管制能力': '#3B82F6',
-  '防衛濫權': '#8B5CF6',
+// ===================== FEVD 圖表 (含控制面板) ===================== //
+// FEVD 圖表標題
+const fevdChartTitles: Record<keyof typeof fevdData, string> = {
+  fdt: 'FEVD: 解釋「國外假訊息威脅」(FDT) 的變異來源',
+  sp: 'FEVD: 解釋「社會兩極化」(SP) 的變異來源',
+  rc: 'FEVD: 解釋「管制能力」(RC) 的變異來源',
+  dap: 'FEVD: 解釋「防衛濫權」(DAP) 的變異來源',
 };
 
-const SERIES_KEYS = Object.keys(COLMAP);
+// 百分比格式化
+const percent = (v: number) => (v * 100).toFixed(1) + '%';
+const labelFormatter = (v: number) => v > 0.05 ? percent(v) : '';
+// Y 軸刻度格式化
+const yAxisFormatter = (v: number) => `${v * 100}`;
+// Y 軸的 domain
+// [Clio Fix 1/2] TS1355 & TS2322: Explicitly type the function return value as AxisDomain tuple. Remove invalid 'as const'.
+const yDomain = (isStacked: boolean): AxisDomain => isStacked ? [0, 1] : [0, 'auto'];
+// Y 軸的 ticks
+const yTicks = (isStacked: boolean) => isStacked ? [0, 0.2, 0.4, 0.6, 0.8, 1.0] : undefined;
 
-// 依據資料與顯示模式，動態計算 Y 軸上限（微幅空間，避免標籤被裁切）
-function computeYDomain(data: any[], stacked: boolean): [number, number] {
-  const HEADROOM = 0.03; // 3% 視覺餘裕
-  if (stacked) {
-    const maxSum = Math.max(
-      ...data.map((r) => SERIES_KEYS.reduce((acc, k) => acc + (r?.[k] ?? 0), 0))
-    );
-    return [0, Math.min(1, maxSum + HEADROOM)];
-  } else {
-    const maxVal = Math.max(
-      ...data.flatMap((r) => SERIES_KEYS.map((k) => r?.[k] ?? 0))
-    );
-    return [0, Math.min(1, maxVal + HEADROOM)];
-  }
-}
+// 圖表控制面板
+const Panel: React.FC<{
+  target: keyof typeof fevdData;
+  setTarget: (target: keyof typeof fevdData) => void;
+  isStacked: boolean;
+  setIsStacked: (isStacked: boolean) => void;
+  showLabel: boolean;
+  setShowLabel: (showLabel: boolean) => void;
+}> = ({ target, setTarget, isStacked, setIsStacked, showLabel, setShowLabel }) => (
+  <div style={{ padding: 16, background: '#1f2937', borderRadius: 8, border: '1px solid #374151', display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'center' }}>
+    {/* 目標變數選擇 */}
+    <div>
+      <label htmlFor="target-select" style={{ color: '#d1d5db', marginRight: 8, fontSize: 14 }}>選擇 FEVD 目標:</label>
+      <select
+        id="target-select"
+        value={target}
+        onChange={(e) => setTarget(e.target.value as keyof typeof fevdData)}
+        style={{ background: '#374151', color: 'white', border: '1px solid #4b5563', borderRadius: 4, padding: '4px 8px' }}
+      >
+        <option value="fdt">國外假訊息威脅 (FDT)</option>
+        <option value="sp">社會兩極化 (SP)</option>
+        <option value="rc">管制能力 (RC)</option>
+        <option value="dap">防衛濫權 (DAP)</option>
+      </select>
+    </div>
+    {/* 堆疊/分組 切換 */}
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <input type="checkbox" id="stack-toggle" checked={isStacked} onChange={() => setIsStacked(!isStacked)} />
+      <label htmlFor="stack-toggle" style={{ color: '#d1d5db', fontSize: 14, userSelect: 'none' }}>堆疊長條圖 (Stacked)</label>
+    </div>
+    {/* 顯示標籤 切換 */}
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <input type="checkbox" id="label-toggle" checked={showLabel} onChange={() => setShowLabel(!showLabel)} />
+      <label htmlFor="label-toggle" style={{ color: '#d1d5db', fontSize: 14, userSelect: 'none' }}>顯示資料標籤 (Labels)</label>
+    </div>
+  </div>
+);
 
-// ===== IRF 資料處理與雙層圖表 ===== //
+// FEVD 圖表本體
+const FevdChart: React.FC = () => {
+  const [target, setTarget] = useState<keyof typeof fevdData>('sp');
+  const [isStacked, setIsStacked] = useState(true);
+  const [showLabel, setShowLabel] = useState(true);
+
+  const data = fevdData[target];
+
+  return (
+    <div style={{ background: '#0b1220', padding: '24px 16px', border: '1px solid #334155', borderRadius: 12 }}>
+      <h3 style={{ color: 'white', fontWeight: 700, fontSize: 20, textAlign: 'center', marginBottom: 24 }}>
+        {fevdChartTitles[target]}
+      </h3>
+      <Panel
+        target={target}
+        setTarget={setTarget}
+        isStacked={isStacked}
+        setIsStacked={setIsStacked}
+        showLabel={showLabel}
+        setShowLabel={setShowLabel}
+      />
+      <ResponsiveContainer width="100%" height={400} style={{ marginTop: 24 }}>
+        <BarChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 25 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+          <XAxis
+            dataKey="period"
+            label={{ value: '期數 (Period)', position: 'insideBottom', offset: -15, fill: '#9ca3af' }}
+            tick={{ fill: '#9ca3af', fontSize: 12 }}
+            stroke="#4b5563"
+          />
+          <YAxis
+            label={{ value: isStacked ? '解釋比例 (%)' : '變異數', angle: -90, position: 'insideLeft', offset: 10, fill: '#9ca3af' }}
+            tickFormatter={isStacked ? yAxisFormatter : undefined}
+            domain={yDomain(isStacked)}
+            ticks={yTicks(isStacked)}
+            tick={{ fill: '#9ca3af', fontSize: 12 }}
+            stroke="#4b5563"
+          />
+          <Tooltip
+            formatter={(value: number) => percent(value)}
+            contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.9)', border: '1px solid #4b5563', borderRadius: 8, color: 'white' }}
+            cursor={{ fill: '#374151', opacity: 0.6 }}
+          />
+          <Legend wrapperStyle={{ color: '#d1d5db', paddingTop: 20 }} />
+          {dataKeys.map((key) => (
+            <Bar key={key} dataKey={key} stackId={isStacked ? 'a' : key} fill={colors[key as keyof typeof colors]} radius={isStacked ? 0 : [4, 4, 0, 0]}>
+              {showLabel && <LabelList dataKey={key} position={isStacked ? "center" : "top"} formatter={labelFormatter} fill="white" fontSize={10} />}
+            </Bar>
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+
+// ===================== [Clio Restoration] IRF 圖表 (雙層含信賴區間) ===================== //
+const irfChartTitles: Record<string, string> = {
+  fdt_rc: 'H1: 國外假訊息 (FDT) 衝擊 → 管制能力 (RC)',
+  rc_dap: 'H2: 管制能力 (RC) 衝擊 → 防衛濫權 (DAP)',
+  dap_sp: 'H3: 防衛濫權 (DAP) 衝擊 → 社會兩極化 (SP)',
+  rc_sp: '悖論一: 管制能力 (RC) 衝擊 → 社會兩極化 (SP)',
+  sp_fdt: '悖論二: 社會兩極化 (SP) 衝擊 → 國外假訊息 (FDT)',
+};
+
+const irfColors = {
+  impulse: '#60a5fa', // Light Blue for main line
+  confidence: 'rgba(156, 163, 175, 0.5)', // Gray for CI lines
+  sigPositive: '#10b981', // Green for significant positive bars/areas
+  sigNegative: '#ef4444', // Red for significant negative bars/areas
+  nonSig: '#6b7280', // Darker Gray for non-significant bars
+  areaPositive: 'rgba(16, 185, 129, 0.08)', // Faint Green for positive sig area
+  areaNegative: 'rgba(239, 68, 68, 0.08)', // Faint Red for negative sig area
+  // [Clio Fix] Added missing paradox colors
+  paradox: '#F97316', // Orange (matching FEVD)
+  paradoxConfidence: 'rgba(249, 115, 22, 0.15)', // Faint Orange
+};
+
+// [Clio Restoration] Restored helper functions from App.txt
 interface IRFPoint { period: number; irf: number; lower: number; upper: number; sig: boolean; }
 function buildIRF(irf: number[], lower: number[], upper: number[]): IRFPoint[] {
   const n = Math.min(irf.length, lower.length, upper.length);
   const rows: IRFPoint[] = [];
   for (let i = 0; i < n; i++) {
-    const l = lower[i];
-    const u = upper[i];
-    const val = irf[i];
-    const sig = (l > 0) || (u < 0); // 95% CI 不含 0 即顯著
-    rows.push({ period: i + 1, irf: val, lower: l, upper: u, sig });
+    const l = lower[i] ?? 0; // Use ?? 0 as fallback if data is missing/undefined
+    const u = upper[i] ?? 0;
+    const val = irf[i] ?? 0;
+    const sig = (l > 0 && u > 0) || (l < 0 && u < 0); // Both bounds must be on the same side of 0
+    rows.push({ period: i , irf: val, lower: l, upper: u, sig }); // Changed period to start from 0
   }
-  return rows;
+  // Ensure period starts from 1 for chart display if needed, or adjust XAxis domain
+   return rows.map(row => ({ ...row, period: row.period + 1 }));
 }
+
 function contiguousSigRanges(data: IRFPoint[]): Array<{ start: number; end: number; pos: boolean }>{
   const out: Array<{ start: number; end: number; pos: boolean }> = [];
   let i = 0;
@@ -253,308 +274,290 @@ function contiguousSigRanges(data: IRFPoint[]): Array<{ start: number; end: numb
     if (!data[i].sig) { i++; continue; }
     const pos = data[i].irf >= 0;
     let j = i;
+    // Find end of contiguous significant block with the same sign
     while (j < data.length && data[j].sig && (data[j].irf >= 0) === pos) j++;
-    out.push({ start: data[i].period, end: data[j - 1].period, pos });
-    i = j;
+     // Adjust start/end for ReferenceArea which uses category index (period - 0.5)
+    out.push({ start: data[i].period - 0.5, end: data[j - 1].period + 0.5, pos });
+    i = j; // Continue search after the block
   }
   return out;
 }
 
+
+// [Clio Restoration] Restored IRF_PROP1, PROP2, PROP3, PAR1, PAR2 constants
 const IRF_PROP1 = buildIRF(irf_prop1_irf, irf_prop1_lo, irf_prop1_hi);
 const IRF_PROP2 = buildIRF(irf_prop2_irf, irf_prop2_lo, irf_prop2_hi);
 const IRF_PROP3 = buildIRF(irf_prop3_irf, irf_prop3_lo, irf_prop3_hi);
 const IRF_PAR1  = buildIRF(irf_par1_irf,  irf_par1_lo,  irf_par1_hi);
 const IRF_PAR2  = buildIRF(irf_par2_irf,  irf_par2_lo,  irf_par2_hi);
 
-interface IRFDoubleChartProps { title: string; data: IRFPoint[]; }
-const IRFDoubleChart: React.FC<IRFDoubleChartProps> = ({ title, data }) => {
+// [Clio Restoration] Restored IRFDoubleChart component from App.txt
+const IRFDoubleChart: React.FC<{
+  title: string;
+  data: IRFPoint[];
+  isParadox?: boolean; // Keep paradox styling if needed
+}> = ({ title, data, isParadox }) => {
   const ranges = useMemo(() => contiguousSigRanges(data), [data]);
-  const maxAbs = useMemo(() => Math.max(...data.map(d => Math.abs(d.upper)), ...data.map(d => Math.abs(d.lower))), [data]);
-  const yDomain: [number, number] = [-(maxAbs * 1.1), maxAbs * 1.1];
+  // Calculate Y-axis domain dynamically, adding 10% padding
+  const { yMin, yMax } = useMemo(() => {
+    const allValues = data.flatMap(d => [d.lower, d.upper, d.irf]);
+    const minVal = Math.min(...allValues, 0); // Include 0 in min/max calculation
+    const maxVal = Math.max(...allValues, 0);
+    const padding = (maxVal - minVal) * 0.10; // 10% padding
+    return { yMin: minVal - padding, yMax: maxVal + padding };
+  }, [data]);
+  const yDomain: [number, number] = [yMin, yMax]; // Explicit tuple type
+
+  // Define colors based on whether it's a paradox chart
+  const mainLineColor = isParadox ? irfColors.paradox : irfColors.impulse;
+  const sigPositiveColor = isParadox ? irfColors.paradox : irfColors.sigPositive;
+  const areaPositiveColor = isParadox ? irfColors.paradoxConfidence : irfColors.areaPositive;
+
+
+  // Custom Tooltip for IRF Charts
+  const IRFCustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const pointData = data.find(d => d.period === label);
+      return (
+        <div style={{ background: 'rgba(31, 41, 55, 0.9)', border: '1px solid #4b5563', padding: 12, borderRadius: 8, color: 'white', fontSize: 12 }}>
+          <p style={{ fontWeight: 'bold', marginBottom: 4 }}>期數 (Period): {label}</p>
+          <p style={{ color: mainLineColor }}>衝擊響應 (IRF): {payload[2]?.value?.toFixed(4)}</p>
+          <p style={{ color: irfColors.confidence }}>95% 信賴區間: [{payload[0]?.value?.toFixed(4)}, {payload[1]?.value?.toFixed(4)}]</p>
+          <p style={{ marginTop: 4, color: pointData?.sig ? (pointData.irf >= 0 ? irfColors.sigPositive : irfColors.sigNegative) : irfColors.nonSig }}>
+            {pointData?.sig ? '顯著' : '不顯著'}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+
   return (
     <div style={{ background: '#0b1220', border: '1px solid #334155', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-      <h4 style={{ color: 'white', textAlign: 'center', marginBottom: 8 }}>{title}</h4>
+      <h4 style={{ color: 'white', textAlign: 'center', marginBottom: 8, fontWeight: 700 }}>{title}</h4>
       {/* 上層：IRF 折線 + 上下界 + 顯著期段陰影 */}
       <ResponsiveContainer width="100%" height={260}>
-        <ComposedChart data={data} margin={{ top: 10, right: 16, left: 8, bottom: 0 }}>
+        <ComposedChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="period" tick={{ fill: '#d1d5db', fontSize: 11 }} />
-          <YAxis domain={yDomain} tick={{ fill: '#d1d5db', fontSize: 11 }} />
-          <Tooltip contentStyle={{ background: '#0b1220', border: '1px solid #334155', color: '#e5e7eb' }} />
+          <XAxis dataKey="period" tick={{ fill: '#d1d5db', fontSize: 11 }} interval={2} />
+          <YAxis domain={yDomain} tick={{ fill: '#d1d5db', fontSize: 11 }} tickFormatter={(v) => v.toFixed(2)} width={40}/>
+          <Tooltip content={<IRFCustomTooltip />} />
+          {/* Render significant areas first */}
           {ranges.map((r, idx) => (
-            <ReferenceArea key={idx} x1={r.start} x2={r.end} y1={yDomain[0]} y2={yDomain[1]} fill={r.pos ? '#10b981' : '#ef4444'} fillOpacity={0.08} />
+            <ReferenceArea key={`area-${idx}`} x1={r.start} x2={r.end} y1={yDomain[0]} y2={yDomain[1]}
+             fill={r.pos ? areaPositiveColor : irfColors.areaNegative}
+             ifOverflow="hidden" />
           ))}
-          <Line type="monotone" dataKey="lower" stroke="#9ca3af" dot={false} strokeDasharray="4 3" />
-          <Line type="monotone" dataKey="upper" stroke="#9ca3af" dot={false} strokeDasharray="4 3" />
-          <Line type="monotone" dataKey="irf" stroke="#60a5fa" dot={{ r: 2 }} strokeWidth={2} />
-          <ReferenceLine y={0} stroke="#6b7280" />
+          {/* Confidence Interval Lines (dashed) */}
+          <Line type="monotone" dataKey="lower" stroke={irfColors.confidence} dot={false} strokeDasharray="4 3" activeDot={false} />
+          <Line type="monotone" dataKey="upper" stroke={irfColors.confidence} dot={false} strokeDasharray="4 3" activeDot={false} />
+           {/* Main Impulse Response Line */}
+          <Line type="monotone" dataKey="irf" stroke={mainLineColor} dot={{ r: 2, fill: mainLineColor }} strokeWidth={2} activeDot={{ r: 4 }}/>
+          {/* Zero Reference Line */}
+          <ReferenceLine y={0} stroke="#6b7280" strokeWidth={1}/>
         </ComposedChart>
       </ResponsiveContainer>
       {/* 下層：顯著性條形圖 */}
       <ResponsiveContainer width="100%" height={160}>
-        <BarChart data={data} margin={{ top: 6, right: 16, left: 8, bottom: 12 }}>
+        <BarChart data={data} margin={{ top: 6, right: 16, left: 0, bottom: 12 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="period" tick={{ fill: '#d1d5db', fontSize: 11 }} />
-          <YAxis tick={{ fill: '#d1d5db', fontSize: 11 }} domain={yDomain} />
-          <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine y={0} stroke="#6b7280" />
+          <XAxis dataKey="period" tick={{ fill: '#d1d5db', fontSize: 11 }} interval={2} />
+          <YAxis tick={{ fill: '#d1d5db', fontSize: 11 }} domain={yDomain} tickFormatter={(v) => v.toFixed(2)} width={40}/>
+          <Tooltip content={<IRFCustomTooltip />} />
+          <ReferenceLine y={0} stroke="#6b7280" strokeWidth={1} />
           <Bar dataKey="irf">
             {data.map((d, i) => (
-              <Cell key={i} fill={d.sig ? (d.irf >= 0 ? '#10b981' : '#ef4444') : '#6b7280'} opacity={d.sig ? 0.9 : 0.4} />
+              <Cell key={`cell-${i}`} fill={d.sig ? (d.irf >= 0 ? sigPositiveColor : irfColors.sigNegative) : irfColors.nonSig} opacity={d.sig ? 0.9 : 0.4} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <p style={{ color: '#9ca3af', fontSize: 12, textAlign: 'center', marginTop: 6 }}>上圖：IRF 主線（藍）與 95% 信賴上下界（灰虛線）；綠/紅底代表顯著期段。下圖：以顏色呈現顯著與方向，數值為期別反應。</p>
+      <p style={{ color: '#9ca3af', fontSize: 12, textAlign: 'center', marginTop: 6 }}>上圖：IRF 主線與 95% 信賴上下界；背景色塊代表顯著期段。下圖：以顏色呈現顯著與方向。</p>
     </div>
   );
 };
 
-// ===================== FEVD 圖表元件 ===================== //
-interface FevdChartProps {
-  data: any[];
-  title: string;
-  stacked?: boolean;
-  showDataLabels?: boolean;
-}
 
-const FevdChart: React.FC<FevdChartProps> = ({ data, title, stacked = true, showDataLabels = false }) => {
-  const keys = useMemo(() => SERIES_KEYS, []);
-  const yDomain = useMemo(() => computeYDomain(data, stacked), [data, stacked]);
-
+// ===================== 圖片燈箱 Modal ===================== //
+const Modal: React.FC<{ src: string | null; onClose: () => void }> = ({ src, onClose }) => {
+  if (!src) return null;
   return (
-    <div style={{ backgroundColor: '#1f2937', padding: '24px', borderRadius: '8px', border: "1px solid #4b5563", marginBottom: '24px' }}>
-      <h4 style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center', color: '#d1d5db', marginBottom: '16px' }}>{title}</h4>
-      <ResponsiveContainer width="100%" height={360}>
-        <BarChart data={data} margin={{ top: 20, right: 20, left: 20, bottom: 25 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
-          <XAxis dataKey="period" tick={{ fill: '#d1d5db', fontSize: 11 }} />
-          <YAxis domain={yDomain} tick={{ fill: '#d1d5db', fontSize: 11 }} tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ color: '#d1d5db' }} />
-          {keys.map((k) => (
-            <Bar key={k} dataKey={k} stackId={stacked ? 'a' : undefined} fill={COLMAP[k]}>
-              {showDataLabels && (
-                <LabelList dataKey={k} position="top" formatter={labelFormatter} style={{ fill: '#e5e7eb', fontSize: 10 }} />
-              )}
-            </Bar>
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
-      <p style={{ color: '#9ca3af', fontSize: 12, textAlign: 'center', marginTop: 8 }}>Y 軸為貢獻比例（0–1），會依據資料自動給 3% 視覺餘裕。</p>
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, cursor: 'pointer' }}
+    >
+      <span onClick={onClose} style={{ position: 'absolute', top: 20, right: 35, color: 'white', fontSize: 40, fontWeight: 'bold', cursor: 'pointer' }}>
+        &times;
+      </span>
+      <img
+        src={src}
+        alt="Enlarged chart"
+        style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
+        onClick={(e) => e.stopPropagation()} // 防止點擊圖片關閉
+      />
     </div>
   );
 };
 
-// FEVD 表格渲染（保留以利比對）
-const FevdTable: React.FC<{ title: string; rows: number[][] }> = ({ title, rows }) => (
-  <div style={{ background: '#0b1220', border: '1px solid #334155', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-    <h4 style={{ color: '#e5e7eb', fontWeight: 700, marginBottom: 8, textAlign: 'center' }}>{title}</h4>
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#d1d5db', fontVariantNumeric: 'tabular-nums' }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #334155' }}>期數</th>
-            <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #334155' }}>國外假訊息威脅</th>
-            <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #334155' }}>社會兩極化</th>
-            <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #334155' }}>管制能力</th>
-            <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #334155' }}>防衛濫權</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i}>
-              <td style={{ padding: 8 }}>{i + 1}</td>
-              {r.map((v, j) => (
-                <td key={j} style={{ padding: 8, textAlign: 'right' }}>{(v * 100).toFixed(1)}%</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
-
-// ===================== 控制面板 ===================== //
-const Panel: React.FC<{
-  dataset: string;
-  setDataset: (v: string) => void;
-  stacked: boolean;
-  setStacked: (v: boolean) => void;
-  showLabels: boolean;
-  setShowLabels: (v: boolean) => void;
-}> = ({ dataset, setDataset, stacked, setStacked, showLabels, setShowLabels }) => {
-  return (
-    <div style={{ background: '#0b1220', border: '1px solid #374151', borderRadius: 12, padding: 16, marginBottom: 16, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 8, color: '#d1d5db' }}>
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>資料來源（FEVD 目標）</span>
-        <select value={dataset} onChange={(e) => setDataset(e.target.value)} style={{ background: '#111827', color: '#e5e7eb', border: '1px solid #374151', borderRadius: 8, padding: '10px 12px' }}>
-          <option value="SP">社會兩極化（SP）的變異來源</option>
-          <option value="FDT">國外假訊息威脅（FDT）的變異來源</option>
-        </select>
-      </label>
-
-      <label style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#d1d5db' }}>
-        <input type="checkbox" checked={stacked} onChange={(e) => setStacked(e.target.checked)} />
-        <span>堆疊顯示</span>
-      </label>
-
-      <label style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#d1d5db' }}>
-        <input type="checkbox" checked={showLabels} onChange={(e) => setShowLabels(e.target.checked)} />
-        <span>顯示資料標籤（&gt;5%）</span>
-      </label>
-    </div>
-  );
-};
-
-// ===================== 主畫面 ===================== //
+// ===================== 主應用程式 App ===================== //
 export default function App() {
-  const [dataset, setDataset] = useState<'SP' | 'FDT'>('SP');
-  const [stacked, setStacked] = useState(true);
-  const [showLabels, setShowLabels] = useState(false);
+  const [modalImage, setModalImage] = useState<string | null>(null);
 
-  const data = dataset === 'SP' ? fevdDataSP : fevdDataFDT;
-
-  // ===================== 內建簡易測試（Dev Tests）===================== //
+  // 開發時的資料驗證
   useEffect(() => {
-    // 1) percent() 輸出
-    console.assert(percent(0.1) === '10.0%', 'percent(0.1) 應為 10.0%');
-    console.assert(percent(undefined) === '—', 'percent(undefined) 應為 —');
+    // 驗證百分比格式化
+    console.assert(percent(0.05) === '5.0%', `percent(0.05) 測試失敗`);
+    console.assert(labelFormatter(0.051) === '5.1%', `labelFormatter(0.051) 測試失敗`);
+    console.assert(labelFormatter(0.049) === '', `labelFormatter(0.049) 測試失敗`);
 
-    // 2) labelFormatter 邏輯：嚴格大於 5%
-    console.assert(labelFormatter(0.049) === '', 'labelFormatter(0.049) 應為 空字串');
-    console.assert(labelFormatter(0.051) === '5.1%', 'labelFormatter(0.051) 應為 5.1%');
-    console.assert(labelFormatter(0.05) === '', 'labelFormatter(0.05) 應為 空字串（嚴格大於 5%）');
-
-    // 3) 每期資料總和約等於 1（允許小數誤差）
-    const rows = (dataset === 'SP' ? fevdDataSP : fevdDataFDT).slice(0, 5); // 抽樣前 5 期
-    rows.forEach((r) => {
-      const sum = SERIES_KEYS.reduce((acc, k) => acc + (r as any)[k], 0);
-      console.assert(Math.abs(1 - sum) < 0.05, `第 ${r.period} 期合計應約為 1，實得 ${sum}`);
-    });
-
-    // 4) yDomain 上限基本測試
-    const stackedDomain = computeYDomain(rows as any, true);
-    console.assert(stackedDomain[0] === 0 && stackedDomain[1] <= 1, '堆疊模式 yDomain 上限應 <= 1');
-    const groupedDomain = computeYDomain(rows as any, false);
-    console.assert(groupedDomain[0] === 0 && groupedDomain[1] <= 1, '分組模式 yDomain 上限應 <= 1');
-
-    // 5) FEVD 表格資料行檢查（加總約 1）
-    [fevdRC, fevdDAP].forEach((tbl, idx) => {
-      tbl.forEach((r, i) => {
-        const s = r.reduce((a, b) => a + b, 0);
-        console.assert(Math.abs(1 - s) < 0.05, `FEVD-${idx === 0 ? 'RC' : 'DAP'} 第 ${i + 1} 期合計應約為 1，實得 ${s}`);
+    // 驗證 FEVD 資料總和
+    [fevdData.fdt, fevdData.sp, fevdData.rc, fevdData.dap].forEach((dataset, i) => {
+      const targetName = ['fdt', 'sp', 'rc', 'dap'][i];
+      dataset.slice(0, 5).forEach(row => { // 抽樣前 5 期
+        const sum = dataKeys.reduce((acc, key) => acc + row[key as keyof typeof row], 0);
+        console.assert(Math.abs(sum - 1) < 0.05, `FEVD data sum error for ${targetName}, period ${row.period}. Sum: ${sum}`);
       });
     });
-  }, [dataset]);
+  }, []);
 
   return (
-    <div style={{ backgroundColor: '#111827', color: '#d1d5db', minHeight: '100vh' }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '64px 16px' }}>
-        <header style={{ textAlign: 'center', marginBottom: 32, paddingBottom: 24, borderBottom: "2px solid #374151" }}>
-          <h1 style={{ fontSize: 48, fontWeight: 'bold', color: 'white', marginBottom: 12 }}>防衛或侵蝕？</h1>
-          <p style={{ fontSize: 20, color: '#e5e7eb', marginBottom: 6 }}>數位威權脅迫下的國家能力與社會極化</p>
-          <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 6 }}>台灣實證研究 (2000–2024)</p>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>潘競恒｜國立中興大學 國家政策與公共事務研究所</p>
+    <div style={{ fontFamily: 'Noto Sans TC, sans-serif', background: '#030712', color: '#d1d5db', minHeight: '100vh', padding: '16px 8px' }}>
+      <Modal src={modalImage} onClose={() => setModalImage(null)} />
+      <div style={{ maxWidth: 960, margin: '0 auto' }}>
+
+        <header style={{ textAlign: 'center', padding: '32px 0' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'white' }}>防衛或侵蝕？</h1>
+          <p style={{ fontSize: '1.25rem', color: '#e5e7eb', marginTop: 16 }}>數位威權脅迫下的國家能力與社會極化：台灣的實證研究 (2000-2024)</p>
+          <p style={{ fontSize: '1.125rem', color: '#9ca3af', marginTop: 24 }}>潘競恒 (國立中興大學 國家政策與公共事務研究所)</p>
         </header>
 
-        {/* ====== 區塊 1：研究背景（收折） ====== */}
-        <Accordion title="研究背景" defaultOpen={false}>
-          <ul style={{ marginLeft: 18 }}>
-            <li>民主政體面臨數位威權的假訊息威脅</li>
-            <li>台灣為地緣政治前線，遭受境外假訊息嚴重攻擊</li>
-            <li>數位平台成為資訊干預與社會極化溫床</li>
-            <li>政府治理面臨「防衛與濫權」張力</li>
-            <li>本研究以系統性計量模型填補動態互動與制度回饋研究缺口</li>
+        {/* [Clio Add] Added Research Background Accordion */}
+        <Accordion title="研究背景" defaultOpen={true}>
+          <ul style={{ listStyleType: 'disc', paddingLeft: 24, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <li>民主政體面臨數位威權的假訊息威脅</li>
+              <li>台灣為地緣政治風險第一線，嚴重遭受境外假訊息攻擊</li>
+              <li>數位平台成為資訊干預與社會極化溫床</li>
+              <li>民主治理面臨「防衛vs濫權」張力</li>
+              <li>本研究以時間序列的結構模型填補動態變化與制度回饋的研究缺口</li>
           </ul>
         </Accordion>
 
-        {/* ====== 區塊 2：理論架構（收折，含示意圖） ====== */}
-        <Accordion title="理論架構" defaultOpen={false}>
-          <ResearchFramework />
-          <div style={{ marginTop: 12, background: '#0b1220', border: '1px solid #334155', borderRadius: 12, padding: 16 }}>
-            <h4 style={{ color: 'white', marginBottom: 8 }}>理論架構補充（PPTX 摘要）</h4>
-            <h5 style={{ color: '#d1d5db', margin: '8px 0 4px' }}>國家能力擴張的驅動機制</h5>
-            <ul style={{ marginLeft: 18, lineHeight: 1.8 }}>
-              <li><strong>外部威脅驅動（Threat-Driven Expansion）</strong>：外部安全競爭為擴張根本動力（Tilly, 1985）；假訊息操作為新型戰爭工具、形塑數位主權（Henschke, 2021）。</li>
-              <li><strong>內部極化壓力（Internal Demand）</strong>：情感極化造成治理失靈，增加國家介入需求。</li>
-            </ul>
-            <h5 style={{ color: '#d1d5db', margin: '12px 0 4px' }}>威脅互動與治理悖論</h5>
-            <ul style={{ marginLeft: 18, lineHeight: 1.8 }}>
-              <li><strong>共生假說</strong>：外部資訊干預與內部裂痕相互催化。</li>
-              <li><strong>工具共生與雙重用途</strong>：RC 工具能處理仇恨言論，也可能壓制異議。</li>
-              <li><strong>濫權與惡性循環</strong>：壓制手段引發心理抗拒與逆火效應（Brehm, 1966），防衛濫權侵蝕制度信任，推升社會極化。</li>
-            </ul>
-          </div>
+        <Accordion title="研究概念架構 (Conceptual Framework)" defaultOpen={true}>
+          <ConceptualFrameworkDiagram />
         </Accordion>
 
-        {/* ====== 區塊 3：研究問題與假設（收折） ====== */}
-        <Accordion title="研究問題與假設" defaultOpen={false}>
-          <p style={{ marginBottom: 8 }}><strong>核心問題：</strong>FDT、SP、RC、DAP 是否存在長期動態互動結構？</p>
-          <ul style={{ marginLeft: 18, lineHeight: 1.9 }}>
-            <li><strong style={{ color: '#60a5fa' }}>H1：FDT → RC</strong> 外部威脅驅動管制擴張。</li>
-            <li><strong style={{ color: '#60a5fa' }}>H2：RC ↔ DAP</strong> 管制能力與濫權具連動性。</li>
-            <li><strong style={{ color: '#60a5fa' }}>H3：DAP → SP</strong> 防衛濫權加劇社會極化。</li>
+        <Accordion title="研究問題與假設 (Questions & Hypotheses)">
+          <h4 style={{ color: 'white', fontWeight: 700, fontSize: '1.25rem', marginTop: 8 }}>核心問題</h4>
+          <p style={{ marginTop: 8 }}>外部的「國外假訊息威脅」(FDT)、內部的「社會兩極化」(SP)、國家的「管制能力」(RC)與政府的「防衛濫權」(DAP)四者之間，是否存在一個長期的動態互動結構?</p>
+          <ul style={{ listStyleType: 'disc', paddingLeft: 24, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <li><strong>子問題一：</strong>外部假訊息衝擊，如何影響 RC 與 DAP 的短期與延遲反應？</li>
+            <li><strong>子問題二：</strong>內部社會極化加劇，如何改變 RC 與 DAP 的治理模式？</li>
+          </ul>
+          <h4 style={{ color: 'white', fontWeight: 700, fontSize: '1.25rem', marginTop: 24 }}>研究假設</h4>
+          <ul style={{ listStyleType: 'disc', paddingLeft: 24, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <li><strong>假設 H1: FDT → RC</strong> (外部威脅驅動管制擴張)</li>
+            <li><strong>假設 H2: RC → DAP</strong> (管制能力與濫權具內在連動)</li>
+            <li><strong>假設 H3: DAP → SP</strong> (防衛濫權加劇社會極化)</li>
           </ul>
         </Accordion>
 
-        {/* ====== 區塊 4：關鍵研究發現（完整 FEVD 控制＋圖表） ====== */}
-        <section style={{ margin: '24px 0' }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', textAlign: 'center', marginBottom: 8 }}>關鍵研究發現</h2>
-          <div style={{ color: '#d1d5db', background: '#0b1220', border: '1px solid #334155', borderRadius: 12, padding: 12, marginBottom: 10 }}>
-            <strong style={{ color: 'white' }}>重點摘要：</strong>
-            <ul style={{ margin: '6px 0 0 18px', lineHeight: 1.7 }}>
-              <li><strong>SP（社會兩極化）</strong>：短期主要由<strong>自身衝擊</strong>解釋；中長期<strong>FDT</strong>（假訊息威脅）與<strong>RC</strong>（管制能力）貢獻上升，<strong>DAP</strong>（防衛濫權）影響逐步顯現。</li>
-              <li><strong>FDT（假訊息威脅）</strong>：短期<strong>完全由自身</strong>解釋；中期起<strong>SP</strong>（社會兩極化）成為最主要外生來源，其次為<strong>RC</strong>與<strong>DAP</strong>的穩定貢獻。</li>
-            </ul>
-          </div>
-          <Panel
-            dataset={dataset}
-            setDataset={(v) => setDataset(v as 'SP' | 'FDT')}
-            stacked={stacked}
-            setStacked={setStacked}
-            showLabels={showLabels}
-            setShowLabels={setShowLabels}
-          />
-          <section style={{ margin: '12px 0', padding: 16, background: '#0f172a', border: '1px solid #334155', borderRadius: 12 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 'bold', color: 'white', marginBottom: 8, textAlign: 'center' }}>讀圖說明</h3>
-            <p style={{ color: '#9ca3af', lineHeight: 1.8, textAlign: 'center' }}>
-              「變異分解（FEVD）」顯示某一目標變數未來預測誤差的來源占比。例如選擇「社會兩極化（SP）」時，
-              每期柱狀堆疊代表 SP 的預測誤差來自「國外假訊息威脅、社會兩極化自身、管制能力、防衛濫權」四者的比例。
-            </p>
-          </section>
-          {dataset === 'SP' ? (
-            <FevdChart data={fevdDataSP} title="FEVD：社會兩極化（SP）的變異來源" stacked={stacked} showDataLabels={showLabels} />
-          ) : (
-            <FevdChart data={fevdDataFDT} title="FEVD：國外假訊息威脅（FDT）的變異來源" stacked={stacked} showDataLabels={showLabels} />
-          )}
-        </section>
-
-        {/* ====== 區塊 5：實證圖表（收折） ====== */}
-        <Accordion title="實證圖表：FEVD & IRF" defaultOpen={false}>
-          <h4 style={{ color: 'white', margin: '8px 0' }}>FEVD（堆疊圖）</h4>
-          <FevdChart data={fevdRC_stacked} title="FEVD：管制能力 (RC) 的變異來源" stacked={true} showDataLabels={true} />
-          <FevdChart data={fevdDAP_stacked} title="FEVD：防衛濫權 (DAP) 的變異來源" stacked={true} showDataLabels={true} />
-
-          <h4 style={{ color: 'white', margin: '16px 0 8px' }}>IRF 圖（95% Bootstrap CI, 100 runs）</h4>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <img src="/IRF_Paradox_RC_to_SP.png" alt="延伸發現：管制能力對社會兩極化的響應" style={{ width: '100%', border: '1px solid #334155', borderRadius: 8 }} />
-            <img src="/IRF_Paradox_SP_to_FDT.png" alt="延伸發現：社會兩極化對國外假訊息威脅的響應" style={{ width: '100%', border: '1px solid #334155', borderRadius: 8 }} />
-            <img src="/IRF_Prop1_FDT_to_RC.png" alt="命題一：國外假訊息威脅對管制能力的響應" style={{ width: '100%', border: '1px solid #334155', borderRadius: 8 }} />
-            <img src="/IRF_Prop2_RC_to_DAP.png" alt="命題二：管制能力對防衛濫權的響應" style={{ width: '100%', border: '1px solid #334155', borderRadius: 8 }} />
-            <img src="/IRF_Prop3_DAP_to_SP.png" alt="命題三：防衛濫權對社會兩極化的響應" style={{ width: '100%', border: '1px solid #334155', borderRadius: 8 }} />
-          </div>
-
-          <h4 style={{ color: 'white', margin: '16px 0 8px' }}>IRF 雙層互動圖（含顯著期段與條形顯著性）</h4>
-          <IRFDoubleChart title="命題一：FDT → RC" data={IRF_PROP1} />
-          <IRFDoubleChart title="命題二：RC → DAP" data={IRF_PROP2} />
-          <IRFDoubleChart title="命題三：DAP → SP" data={IRF_PROP3} />
-          <IRFDoubleChart title="延伸發現：RC → SP" data={IRF_PAR1} />
-          <IRFDoubleChart title="延伸發現：SP → FDT" data={IRF_PAR2} />
+        <Accordion title="方法論 (Methodology)">
+          <ul style={{ listStyleType: 'disc', paddingLeft: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <li><strong>資料來源：</strong> V-Dem 多元民主中心 v15 版 (社群媒體資料集)。</li>
+            <li><strong>樣本期間：</strong> 2000-2024 (N=25)。</li>
+            <li><strong>單根檢定 (Unit Root Test)：</strong> ADF 檢定顯示，所有四個變數 (FDT, SP, RC, DAP) 在水準值上均不平穩，但在「一階差分」後呈現平穩，皆為 I(1) 整合序列。</li>
+            <li><strong>共整合檢定 (Johansen Test)：</strong> 檢定結果顯示，四個變數間存在 3 個共整合向量 (r=3)，意味著它們之間有穩定的長期均衡關係。</li>
+            <li><strong>模型選擇：</strong> 基於 I(1) 與共整合的前提，選擇「結構向量誤差修正模型 (SVEC)」。</li>
+            <li><strong>分析方法：</strong> 衝擊反應函數 (IRF)、預測誤差變異分解 (FEVD)。</li>
+          </ul>
         </Accordion>
 
-        {/* 操作小工具 */}
+        <Accordion title="關鍵發現 (Key Findings)" defaultOpen={true}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            <div>
+              <h3 style={{ color: '#60a5fa', fontWeight: 700, fontSize: '1.5rem', textAlign: 'center' }}>悖論一：國家權力悖論 (State Power Paradox)</h3>
+              <p style={{ marginTop: 12, textAlign: 'center' }}>管制能力(RC) 對 社會極化(SP) 的衝擊，短期雖能壓制，但長期卻轉為正向，成為加劇極化的來源。</p>
+              {/* [Clio Restoration] Use IRFDoubleChart for paradox 1 */}
+              <IRFDoubleChart title={irfChartTitles['rc_sp']} data={IRF_PAR1} isParadox={true} />
+            </div>
+            <div>
+              <h3 style={{ color: '#f97316', fontWeight: 700, fontSize: '1.5rem', textAlign: 'center' }}>悖論二：內生脆弱性 (Endogenous Vulnerability)</h3>
+              <p style={{ marginTop: 12, textAlign: 'center' }}>社會極化(SP) 對 國外假訊息(FDT) 具顯著正向衝擊，顯示內部脆弱性會「吸引」並「放大」外部威脅。</p>
+              {/* [Clio Restoration] Use IRFDoubleChart for paradox 2 */}
+              <IRFDoubleChart title={irfChartTitles['sp_fdt']} data={IRF_PAR2} isParadox={true} />
+            </div>
+          </div>
+        </Accordion>
+
+        <Accordion title="實證圖表：預測誤差變異分解 (FEVD)" defaultOpen={true}>
+          <FevdChart />
+        </Accordion>
+
+        <Accordion title="實證圖表：衝擊響應 (IRF - 核心假設)" defaultOpen={true}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+             {/* [Clio Restoration] Use IRFDoubleChart for hypotheses */}
+            <IRFDoubleChart title={irfChartTitles['fdt_rc']} data={IRF_PROP1} />
+            <IRFDoubleChart title={irfChartTitles['rc_dap']} data={IRF_PROP2} />
+            <IRFDoubleChart title={irfChartTitles['dap_sp']} data={IRF_PROP3} />
+          </div>
+        </Accordion>
+
+        {/* [Clio Deletion] Removed the Accordion for static PNG IRF images */}
+
+        {/* [Clio Deletion] Removed the duplicate FevdTable Accordion call */}
+        {/* <Accordion title="實證圖表：FEVD 完整數據表 (Table)" defaultOpen={false}>
+          <FevdTable />
+        </Accordion> */}
+
+        <Accordion title="結論與政策意涵 (Conclusion)">
+          <ul style={{ listStyleType: 'disc', paddingLeft: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <li><strong>理論貢獻：</strong> 本研究挑戰了傳統線性的「威脅-回應」模型，提出一個更具動態性的「<strong>共生演化</strong>」分析框架。</li>
+            <li><strong>實證發現：</strong> 揭示了「國家權力悖論」與「內生脆弱性」兩個關鍵機制。</li>
+            <li><strong>政策意涵：</strong> 國家在建構防衛機制時必須高度警惕。單純擴張政府的管制能力可能是危險的，甚至會反過來侵蝕社會信任、加劇內部對立。因此，真正的韌性不僅在於抵禦外部威L威脅，更在於處理「內部極化」，並對國家權力建立嚴格且透明的**制度制衡**。</li>
+          </ul>
+        </Accordion>
+
+        <Accordion title="變數測量 (Variables)">
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
+            <thead>
+              <tr style={{ background: '#1f2937' }}>
+                <th style={{ border: '1px solid #374151', padding: 10, textAlign: 'left', color: 'white' }}>核心變數</th>
+                <th style={{ border: '1px solid #374151', padding: 10, textAlign: 'left', color: 'white' }}>V-Dem 指標</th>
+                <th style={{ border: '1px solid #374151', padding: 10, textAlign: 'left', color: 'white' }}>指標測量的具體問題</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ border: '1px solid #374151', padding: 10, fontWeight: 700 }}>國外假訊息 (FDT)</td>
+                <td style={{ border: '1px solid #374151', padding: 10, fontFamily: 'monospace' }}><code>v2smfordom</code></td>
+                <td style={{ border: '1px solid #374151', padding: 10 }}>「外國政府...在多大的常規程度上，利用社群媒體散播...不實資訊，以影響本國國內政治？」</td>
+              </tr>
+              <tr>
+                <td style={{ border: '1px solid #374151', padding: 10, fontWeight: 700 }}>社會極化 (SP)</td>
+                <td style={{ border: '1px solid #374151', padding: 10, fontFamily: 'monospace' }}><code>v2smpolsoc</code></td>
+                <td style={{ border: '1px solid #374151', padding: 10 }}>「您如何描述這個社會在主要政治議題上的意見差異？...在多大程度上導致了『主要的觀點衝突與兩極化』。」</td>
+              </tr>
+              <tr>
+                <td style={{ border: '1px solid #374151', padding: 10, fontWeight: 700 }}>管制能力 (RC)</td>
+                <td style={{ border: '1px solid #374151', padding: 10, fontFamily: 'monospace' }}><code>v2smregcap</code></td>
+                <td style={{ border: '1px solid #374151', padding: 10 }}>「政府是否有充足的員工與資源，以依據現行法律來管制網路內容？」</td>
+              </tr>
+              <tr>
+                <td style={{ border: '1px solid #374151', padding: 10, fontWeight: 700 }}>防衛濫權 (DAP)</td>
+                <td style={{ border: '1px solid #374151', padding: 10, fontFamily: 'monospace' }}><code>v2smdefabu</code></td>
+                <td style={{ border: '1px solid #374151', padding: 10 }}>「菁英在多大程度上，濫用法律體系（例如誹謗與版權法）來審查網路上的政治言論？」</td>
+              </tr>
+            </tbody>
+          </table>
+        </Accordion>
+
+        {/* ===================== FEVD 表格元件 ===================== */}
+        {/* [Clio Correction] Ensure FevdTable is called only once, inside its own Accordion */}
+        <FevdTable />
+
+
+        {/* ===================== 頁尾 ===================== */}
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16 }}>
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ background: '#1f2937', border: '1px solid #374151', padding: '10px 14px', borderRadius: 8, color: '#e5e7eb', cursor: 'pointer' }}>回到頂部 ↑</button>
           <button onClick={() => window.print()} style={{ background: '#1f2937', border: '1px solid #374151', padding: '10px 14px', borderRadius: 8, color: '#e5e7eb', cursor: 'pointer' }}>列印 / 匯出 PDF</button>
@@ -567,24 +570,74 @@ export default function App() {
             <li>percent() 與 labelFormatter() 的基本測試已於 console.assert 執行（含 5% 邊界）。</li>
             <li>抽樣前 5 期 FEVD 圖表資料合計接近 1（允許 0.05 誤差）。</li>
             <li>FEVD 表格資料行加總檢查通過（允許 0.05 誤差）。</li>
-            <li>yDomain 會依堆疊/分組自動加 3% 視覺餘裕。</li>
+            {/* <li>yDomain 會依堆疊/分組自動加 3% 視覺餘裕。</li> */} {/* Clio removed this line as yDomain calculation changed */}
           </ul>
         </details>
 
-        <footer style={{ textAlign: 'center', paddingTop: 24, marginTop: 32, borderTop: '1px solid #374151', color: '#6b7280', fontSize: 14 }}>
-          <p>潘競恒｜國立中興大學 國家政策與公共事務研究所</p>
+        <footer style={{ textAlign: 'center', paddingTop: 24, marginTop: 32, borderTop: '1px solid #374151' }}>
+          <p>潘競恒 | 國立中興大學 國家政策與公共事務研究所</p>
+          <p style={{ color: '#9ca3af', fontSize: 14, marginTop: 8 }}>[請填寫您的 Email] | [請填寫您的 ORCID]</p>
         </footer>
-      </div>
 
-      {/* 列印樣式 */}
-      <style>{`
-        @media print {
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          a, button { display: none !important; }
-          header { border: none !important; }
-          details { break-inside: avoid; }
-        }
-      `}</style>
+      </div>
     </div>
   );
 }
+
+// ===================== FEVD 表格元件 ===================== //
+const FevdTable: React.FC = () => {
+  const [target, setTarget] = useState<keyof typeof fevdData>('fdt');
+  const data = fevdData[target];
+
+  // 驗證資料總和
+  useEffect(() => {
+    data.forEach(row => {
+      const sum = dataKeys.reduce((acc, key) => acc + row[key as keyof typeof row], 0);
+      console.assert(Math.abs(sum - 1) < 0.05, `FEVD Table data sum error for ${target}, period ${row.period}. Sum: ${sum}`);
+    });
+  }, [data, target]);
+
+  return (
+    <Accordion title="實證圖表：FEVD 完整數據表 (Table)" defaultOpen={false}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
+        <label htmlFor="table-target-select" style={{ color: '#d1d5db', fontSize: 14 }}>選擇 FEVD 目標:</label>
+        <select
+          id="table-target-select"
+          value={target}
+          onChange={(e) => setTarget(e.target.value as keyof typeof fevdData)}
+          style={{ background: '#374151', color: 'white', border: '1px solid #4b5563', borderRadius: 4, padding: '4px 8px' }}
+        >
+          <option value="fdt">國外假訊息威脅 (FDT)</option>
+          <option value="sp">社會兩極化 (SP)</option>
+          <option value="rc">管制能力 (RC)</option>
+          <option value="dap">防衛濫權 (DAP)</option>
+        </select>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', minWidth: 600, borderCollapse: 'collapse', fontSize: 12 }}>
+          <thead>
+            <tr style={{ background: '#1f2937' }}>
+              <th style={{ border: '1px solid #374151', padding: 8, textAlign: 'center', color: 'white' }}>期數 (Period)</th>
+              {dataKeys.map(key => (
+                <th key={key} style={{ border: '1px solid #374151', padding: 8, textAlign: 'center', color: 'white' }}>{key}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row) => (
+              <tr key={row.period} style={{ background: row.period % 2 === 0 ? '#0b1220' : '#111827' }}>
+                <td style={{ border: '1px solid #374151', padding: 8, textAlign: 'center', fontWeight: 700 }}>{row.period}</td>
+                {dataKeys.map(key => (
+                  <td key={key} style={{ border: '1px solid #374151', padding: 8, textAlign: 'right', fontFamily: 'monospace' }}>
+                    {(row[key as keyof typeof row] * 100).toFixed(2)}%
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Accordion>
+  );
+};
+
